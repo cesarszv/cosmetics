@@ -250,6 +250,7 @@ def test_build_site_writes_index_and_copies_only_referenced_images(tmp_path: Pat
     assert result.rows == 1
     assert result.copied_images == 1
     assert (dist_dir / "index.html").is_file()
+    assert (dist_dir / ".nojekyll").is_file()
     assert (dist_dir / "images" / "purchase-1.jpg").is_file()
     assert not (dist_dir / "images" / "unused.jpg").exists()
 

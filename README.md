@@ -59,9 +59,32 @@ El generador abre SQLite en modo solo lectura (`mode=ro`) y copia al deploy solo
 
 Usá deploy estático. Para este proyecto, un backend sería overengineering.
 
-Opciones razonables:
+### GitHub Pages
 
-- GitHub Pages: más simple si el repo es público.
+El deploy está automatizado con:
+
+```bash
+python3 publish_pages.py
+```
+
+Ese comando hace cuatro cosas:
+
+1. exige que el working tree esté limpio;
+2. genera `dist/` desde `data/cosmetics.db`;
+3. publica el contenido de `dist/` en la rama `gh-pages`;
+4. intenta configurar GitHub Pages con `gh`.
+
+Si la configuración automática falla, hacelo manualmente en GitHub:
+
+```txt
+Settings → Pages → Build and deployment
+Source: Deploy from a branch
+Branch: gh-pages
+Folder: /root
+```
+
+Otras opciones razonables:
+
 - Netlify: drag and drop de `dist/`.
 - Cloudflare Pages: estático sólido.
 

@@ -92,6 +92,7 @@ def build_site(
     prepared_rows, copied_images = prepare_rows(rows, data_dir, image_dir)
     output_file = output_dir / "index.html"
     output_file.write_text(render_document(prepared_rows), encoding="utf-8")
+    (output_dir / ".nojekyll").write_text("", encoding="utf-8")
 
     return BuildResult(output_file=output_file, rows=len(rows), copied_images=copied_images)
 
