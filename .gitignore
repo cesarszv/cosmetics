@@ -1,0 +1,6 @@
+data/
+.pytest_cache/
+.mutmut-cache/
+__pycache__/
+*.py[cod]
+.venv/
