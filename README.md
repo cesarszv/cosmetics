@@ -1,37 +1,74 @@
 # Cosmetics
 
-Visor local read-only para el inventario personal de cosméticos.
+Inventario personal de cosméticos generado como sitio estático desde SQLite.
 
-## Correr el visor
+La idea es simple: **SQLite es la fuente local de verdad** y `dist/` es el artefacto desplegable. Nada de servidores, nada de Streamlit, nada de runtime raro.
 
-```bash
-streamlit run src/visor.py
+## Estructura
+
+```txt
+cosmetics/
+├── build.py              # genera el sitio estático
+├── schema.sql            # schema SQLite versionado
+├── data/                 # datos locales: NO publicar sin revisar
+│   ├── cosmetics.db
+│   └── images/
+├── dist/                 # salida generada para deploy
+├── tests/
+└── pyproject.toml
 ```
 
-La base esperada es `data/cosmetics.db`. El visor abre SQLite en modo solo lectura (`mode=ro`), así que no crea ni modifica la DB.
+## Generar el sitio
 
-## Correr tests
+```bash
+python3 build.py
+```
+
+Salida esperada:
+
+```txt
+dist/index.html
+dist/images/
+```
+
+Abrí `dist/index.html` en el navegador o subí `dist/` a GitHub Pages, Netlify, Vercel o Cloudflare Pages.
+
+## Tests
 
 ```bash
 python3 -m pytest
 ```
 
-## Mutation testing
+## Datos
 
-```bash
-mutmut run
+La base esperada es:
+
+```txt
+data/cosmetics.db
 ```
+
+Las imágenes se referencian desde SQLite con paths relativos a `data/`, por ejemplo:
+
+```txt
+images/1.jpg
+```
+
+El generador abre SQLite en modo solo lectura (`mode=ro`) y copia al deploy solo las imágenes referenciadas por compras existentes.
+
+## Deploy recomendado
+
+Usá deploy estático. Para este proyecto, un backend sería overengineering.
+
+Opciones razonables:
+
+- GitHub Pages: más simple si el repo es público.
+- Netlify: drag and drop de `dist/`.
+- Cloudflare Pages: estático sólido.
+
+## Advertencia sobre HEIC
+
+Si las fotos están en `.heic`, algunos navegadores no las muestran bien. Para un deploy prolijo, convertí las imágenes fuente a `.jpg` o `.webp` antes de generar el sitio.
 
 ## Backup
 
-Respaldar `data/` completo, porque contiene `cosmetics.db` y `images/`:
-
-```bash
-zip -r cosmetics-data-backup.zip data/
-```
-
-## Datos importados
-
-Este workspace fue construido desde el export de Notion en `ExportBlock-7c65a935-7241-411b-aa9c-05481ff3f6be-Part-1`.
-
-Las imágenes HEIC se guardan sin conversión en `data/images/`. El visor las incrusta con MIME `image/heic`; se verán si el navegador soporta HEIC y mostrarán placeholder si faltan o están rotas.
+Respaldá `data/` completo porque contiene la DB y las imágenes.

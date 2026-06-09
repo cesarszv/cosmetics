@@ -5,13 +5,15 @@ from pathlib import Path
 
 import pytest
 
-from visor import (
+from build import (
     EMPTY_MESSAGE,
     PLACEHOLDER_TEXT,
+    build_site,
     connect_read_only,
     format_price,
     get_inventory,
-    render_inventory_table,
+    prepare_rows,
+    render_document,
     resolve_image,
 )
 
@@ -33,9 +35,6 @@ CREATE TABLE purchases (
     finish_date DATE,
     image_path TEXT
 );
-
-CREATE VIEW available_products AS
-SELECT * FROM purchases WHERE finish_date IS NULL;
 """
 
 
@@ -64,7 +63,7 @@ def make_image(tmp_path: Path, relative_path: str = "images/1.jpg") -> Path:
     return image_path
 
 
-def test_s1_shows_all_products_with_photo_and_required_fields(tmp_path: Path) -> None:
+def test_s1_reads_all_products_with_required_fields_and_images(tmp_path: Path) -> None:
     make_image(tmp_path, "images/1.jpg")
     make_image(tmp_path, "images/2.jpg")
     make_image(tmp_path, "images/3.jpg")
@@ -78,48 +77,36 @@ def test_s1_shows_all_products_with_photo_and_required_fields(tmp_path: Path) ->
     )
 
     rows = get_inventory(db_path)
-    html = render_inventory_table(rows, tmp_path)
+    prepared, copied = prepare_rows(rows, tmp_path, tmp_path / "dist/images")
+    html = render_document(prepared)
 
     assert len(rows) == 3
-    assert html.count("class=\"thumb\"") == 3
-    assert "Marca" in html
-    assert "Nombre" in html
-    assert "Tamaño" in html
-    assert "Precio" in html
-    assert "Fecha de compra" in html
+    assert copied == 3
+    assert "Marca" not in html
+    assert "Uno" in html
+    assert "10ml" in html
+    assert "Bs 10.00" in html
+    assert "2026-01-01" in html
 
 
-def test_s2_orders_purchases_by_date_descending(tmp_path: Path) -> None:
+def test_s2_orders_purchases_by_date_descending_and_id_descending(tmp_path: Path) -> None:
     db_path = make_db(
         tmp_path,
         [
             (1, 1, "A", "Enero", None, "2026-01-10", 1000, None, None),
-            (2, 2, "B", "Marzo", None, "2026-03-05", 1000, None, None),
+            (2, 2, "B", "Marzo viejo", None, "2026-03-05", 1000, None, None),
             (3, 3, "C", "Febrero", None, "2026-02-01", 1000, None, None),
+            (4, 4, "D", "Marzo nuevo", None, "2026-03-05", 1000, None, None),
         ],
     )
 
     rows = get_inventory(db_path)
 
-    assert rows[0]["purchase_date"] == "2026-03-05"
+    assert rows[0]["purchase_id"] == 4
+    assert rows[1]["purchase_id"] == 2
 
 
-def test_get_inventory_default_includes_finished_purchases(tmp_path: Path) -> None:
-    db_path = make_db(
-        tmp_path,
-        [
-            (1, 1, "A", "Disponible", None, "2026-01-01", 1000, None, None),
-            (2, 2, "B", "Terminado", None, "2026-01-02", 1000, "2026-04-30", None),
-        ],
-    )
-
-    rows = get_inventory(db_path)
-
-    assert len(rows) == 2
-    assert {row["finish_date"] for row in rows} == {None, "2026-04-30"}
-
-
-def test_s3_filters_only_available_from_finish_date(tmp_path: Path) -> None:
+def test_s3_available_is_derived_from_finish_date(tmp_path: Path) -> None:
     db_path = make_db(
         tmp_path,
         [
@@ -129,10 +116,9 @@ def test_s3_filters_only_available_from_finish_date(tmp_path: Path) -> None:
         ],
     )
 
-    rows = get_inventory(db_path, only_available=True)
+    prepared, _ = prepare_rows(get_inventory(db_path), tmp_path, tmp_path / "dist/images")
 
-    assert len(rows) == 2
-    assert all(row["finish_date"] is None for row in rows)
+    assert [row["available"] for row in prepared] == [False, True, True]
 
 
 def test_s4_missing_image_path_renders_placeholder(tmp_path: Path) -> None:
@@ -141,9 +127,10 @@ def test_s4_missing_image_path_renders_placeholder(tmp_path: Path) -> None:
         [(1, 1, "A", "Uno", None, "2026-01-01", 1000, None, None)],
     )
 
-    rows = get_inventory(db_path)
-    html = render_inventory_table(rows, tmp_path)
+    prepared, copied = prepare_rows(get_inventory(db_path), tmp_path, tmp_path / "dist/images")
+    html = render_document(prepared)
 
+    assert copied == 0
     assert resolve_image(None, tmp_path) is None
     assert PLACEHOLDER_TEXT in html
 
@@ -154,25 +141,27 @@ def test_s5_broken_image_path_renders_placeholder(tmp_path: Path) -> None:
         [(1, 1, "A", "Uno", None, "2026-01-01", 1000, None, "images/999.jpg")],
     )
 
-    rows = get_inventory(db_path)
-    html = render_inventory_table(rows, tmp_path)
+    prepared, copied = prepare_rows(get_inventory(db_path), tmp_path, tmp_path / "dist/images")
+    html = render_document(prepared)
 
+    assert copied == 0
     assert resolve_image("images/999.jpg", tmp_path) is None
     assert PLACEHOLDER_TEXT in html
 
 
-def test_s6_empty_inventory_returns_no_rows_for_empty_message(tmp_path: Path) -> None:
+def test_s6_empty_inventory_generates_empty_state(tmp_path: Path) -> None:
     db_path = make_db(tmp_path, [])
 
-    rows = get_inventory(db_path)
+    prepared, copied = prepare_rows(get_inventory(db_path), tmp_path, tmp_path / "dist/images")
+    html = render_document(prepared)
 
-    assert rows == []
-    assert EMPTY_MESSAGE == "No hay productos cargados"
+    assert prepared == []
+    assert copied == 0
+    assert EMPTY_MESSAGE in html
 
 
 def test_s7_missing_database_raises_clear_error_without_creating_file(tmp_path: Path) -> None:
     db_path = tmp_path / "missing.db"
-
 
     with pytest.raises(FileNotFoundError, match="No existe la base de datos esperada"):
         get_inventory(db_path)
@@ -213,85 +202,66 @@ def test_connect_read_only_uses_sqlite_uri_mode_ro(tmp_path: Path, monkeypatch: 
     }
 
 
-def test_render_inventory_table_escapes_fields_and_embeds_clickable_images(tmp_path: Path) -> None:
-    make_image(tmp_path, "images/1.jpg")
-    make_image(tmp_path, "images/2.jpg")
+def test_s9_formats_price_from_cents() -> None:
+    assert format_price(24600) == "Bs 246.00"
+
+
+def test_generated_html_escapes_fields_safely(tmp_path: Path) -> None:
     rows = [
         {
+            "purchase_id": 1,
             "brand": "A&B",
-            "name": "<Serum>",
+            "name": "</script><img src=x onerror=alert(1)>",
             "size": "30ml",
             "price_bob": 1234,
             "purchase_date": "2026-01-02",
             "finish_date": None,
-            "image_path": "images/1.jpg",
-        },
-        {
-            "brand": "C",
-            "name": "Cream",
-            "size": "50ml",
-            "price_bob": 2000,
-            "purchase_date": "2026-01-01",
-            "finish_date": "2026-04-30",
-            "image_path": "images/2.jpg",
-        },
+            "image_path": None,
+        }
     ]
 
-    html = render_inventory_table(rows, tmp_path)
+    prepared, _ = prepare_rows(rows, tmp_path, tmp_path / "dist/images")
+    html = render_document(prepared)
 
-    assert "XXXX" not in html
-    assert html.count("class=\"thumb\"") == 2
-    assert "data:image/jpeg;base64,ZmFrZSBpbWFnZSBieXRlcw==" in html
-    assert "data:None" not in html
-    assert 'target="_blank" rel="noopener" title="Abrir foto"' in html
-    assert "<td>A&amp;B</td>" in html
-    assert "<td>&lt;Serum&gt;</td>" in html
-    assert "<td>30ml</td>" in html
-    assert "<td>Bs 12.34</td>" in html
-    assert "<td>2026-01-02</td>" in html
-    assert "<td>2026-04-30</td>" in html
+    assert "A&amp;B" in html
+    assert "&lt;/script&gt;&lt;img" in html
+    assert "</script><img" not in html
 
 
-def test_render_inventory_table_keeps_empty_optional_fields_empty(tmp_path: Path) -> None:
-    html = render_inventory_table(
-        [
-            {
-                "brand": None,
-                "name": None,
-                "size": None,
-                "price_bob": 0,
-                "purchase_date": None,
-                "finish_date": None,
-                "image_path": None,
-            }
-        ],
+def test_image_paths_cannot_escape_data_directory(tmp_path: Path) -> None:
+    outside = tmp_path.parent / "outside.jpg"
+    outside.write_bytes(b"outside")
+
+    assert resolve_image("../outside.jpg", tmp_path) is None
+
+
+def test_build_site_writes_index_and_copies_only_referenced_images(tmp_path: Path) -> None:
+    make_image(tmp_path, "images/1.jpg")
+    make_image(tmp_path, "images/unused.jpg")
+    db_path = make_db(
         tmp_path,
+        [(1, 1, "A", "Uno", "10ml", "2026-01-01", 1000, None, "images/1.jpg")],
     )
+    dist_dir = tmp_path / "dist"
 
-    assert "XXXX" not in html
-    assert html.count("<td></td>") == 5
+    result = build_site(db_path=db_path, data_dir=tmp_path, dist_dir=dist_dir)
 
-
-def test_render_inventory_table_uses_octet_stream_for_unknown_image_type(tmp_path: Path) -> None:
-    make_image(tmp_path, "images/1.unknown")
-
-    html = render_inventory_table(
-        [
-            {
-                "brand": "A",
-                "name": "B",
-                "size": None,
-                "price_bob": 100,
-                "purchase_date": "2026-01-01",
-                "finish_date": None,
-                "image_path": "images/1.unknown",
-            }
-        ],
-        tmp_path,
-    )
-
-    assert "data:application/octet-stream;base64,ZmFrZSBpbWFnZSBieXRlcw==" in html
+    assert result.output_file == dist_dir / "index.html"
+    assert result.rows == 1
+    assert result.copied_images == 1
+    assert (dist_dir / "index.html").is_file()
+    assert (dist_dir / "images" / "purchase-1.jpg").is_file()
+    assert not (dist_dir / "images" / "unused.jpg").exists()
 
 
-def test_s9_formats_price_from_cents() -> None:
-    assert format_price(24600) == "Bs 246.00"
+def test_static_ui_defaults_to_only_available_filter() -> None:
+    html = render_document([])
+
+    assert '<input id="availableOnly" type="checkbox" checked>' in html
+
+
+def test_generator_has_no_streamlit_or_pandas_runtime_dependency() -> None:
+    source = Path("build.py").read_text(encoding="utf-8")
+
+    assert "streamlit" not in source
+    assert "pandas" not in source
