@@ -1,0 +1,23 @@
+# Python/cache local
+.pytest_cache/
+.mutmut-cache/
+__pycache__/
+*.py[cod]
+.venv/
+
+# Build/deploy artifact. Source lives in main; published site lives in gh-pages.
+dist/
+
+# Local/generated project junk
+ExportBlock-*/
+mutants/
+*.egg-info/
+
+# SQLite transient files. The actual .db IS intentionally tracked.
+*.db-shm
+*.db-wal
+*.db-journal
+
+# OS/editor noise
+.DS_Store
+.vscode/
