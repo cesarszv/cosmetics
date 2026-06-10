@@ -47,6 +47,31 @@ La base esperada es:
 data/cosmetics.db
 ```
 
+El modelo actual usa una tabla principal:
+
+```txt
+cosmetic_purchases
+```
+
+Cada fila representa una compra/unidad comprada. No existe una columna `available`: la disponibilidad se deriva de `ended_date`.
+
+```txt
+ended_date IS NULL     -> todavía lo tenés
+ended_date IS NOT NULL -> se terminó o ya no lo tenés
+```
+
+Cuando una fecha fue inferida durante la carga inicial, queda marcada con:
+
+```txt
+ended_date_kind = estimated
+```
+
+Cuando vino explícitamente del export/manual:
+
+```txt
+ended_date_kind = exact
+```
+
 Las imágenes se referencian desde SQLite con paths relativos a `data/`, por ejemplo:
 
 ```txt
@@ -54,6 +79,18 @@ images/1.jpg
 ```
 
 El generador abre SQLite en modo solo lectura (`mode=ro`) y copia al deploy solo las imágenes referenciadas por compras existentes.
+
+## VSCode Tasks
+
+Este repo versiona `.vscode/tasks.json` para automatizar lo repetitivo sin meter configuración personal del editor.
+
+Tasks disponibles:
+
+- `validate-db`: valida integridad, schema, fechas y fotos referenciadas.
+- `test`: corre la suite de tests.
+- `check`: corre `validate-db` y después `test`.
+- `build-site`: genera `dist/` desde SQLite.
+- `publish-pages`: publica `dist/` en GitHub Pages usando `publish_pages.py`.
 
 ## Deploy recomendado
 

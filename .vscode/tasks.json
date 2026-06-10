@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "test",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/bin/python",
+      "args": ["-m", "pytest"],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "validate-db",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/bin/python",
+      "args": ["validate_db.py"],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "check",
+      "dependsOrder": "sequence",
+      "dependsOn": ["validate-db", "test"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "build-site",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/bin/python",
+      "args": ["build.py"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "publish-pages",
+      "type": "process",
+      "command": "${workspaceFolder}/.venv/bin/python",
+      "args": ["publish_pages.py"],
+      "problemMatcher": []
+    }
+  ]
+}

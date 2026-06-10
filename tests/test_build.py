@@ -18,24 +18,18 @@ from build import (
 )
 
 
-SCHEMA = """
-CREATE TABLE products (
-    id INTEGER PRIMARY KEY,
-    brand TEXT NOT NULL,
-    name TEXT NOT NULL,
-    size TEXT,
-    category TEXT
-);
+SCHEMA = Path("schema.sql").read_text(encoding="utf-8")
 
-CREATE TABLE purchases (
-    id INTEGER PRIMARY KEY,
-    product_id INTEGER NOT NULL REFERENCES products(id),
-    purchase_date DATE NOT NULL,
-    price_bob INTEGER NOT NULL,
-    finish_date DATE,
-    image_path TEXT
-);
-"""
+
+def parse_test_size(size: str | None) -> tuple[float | None, str | None]:
+    if not size:
+        return None, None
+
+    unit = "ml" if size.endswith("ml") else "g" if size.endswith("g") else None
+    if unit is None:
+        return None, None
+
+    return float(size[: -len(unit)]), unit
 
 
 def make_db(tmp_path: Path, purchases: list[tuple]) -> Path:
@@ -43,15 +37,39 @@ def make_db(tmp_path: Path, purchases: list[tuple]) -> Path:
     with sqlite3.connect(db_path) as connection:
         connection.executescript(SCHEMA)
         connection.executemany(
-            "INSERT INTO products (id, brand, name, size, category) VALUES (?, ?, ?, ?, ?)",
-            [(item[1], item[2], item[3], item[4], None) for item in purchases],
-        )
-        connection.executemany(
             """
-            INSERT INTO purchases (id, product_id, purchase_date, price_bob, finish_date, image_path)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO cosmetic_purchases (
+                id,
+                brand,
+                product_name,
+                category,
+                product_type,
+                size_value,
+                size_unit,
+                purchase_date,
+                price_bob_cents,
+                ended_date,
+                ended_date_kind,
+                image_path
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            [(item[0], item[1], item[5], item[6], item[7], item[8]) for item in purchases],
+            [
+                (
+                    item[0],
+                    item[2],
+                    item[3],
+                    "skincare",
+                    "moisturizer",
+                    parse_test_size(item[4])[0],
+                    parse_test_size(item[4])[1],
+                    item[5],
+                    item[6],
+                    item[7],
+                    "exact" if item[7] else None,
+                    item[8],
+                )
+                for item in purchases
+            ],
         )
     return db_path
 
@@ -178,7 +196,11 @@ def test_s8_database_connection_is_read_only(tmp_path: Path) -> None:
     with connect_read_only(db_path) as connection:
         with pytest.raises(sqlite3.OperationalError):
             connection.execute(
-                "INSERT INTO products (id, brand, name) VALUES (99, 'X', 'Y')"
+                """
+                INSERT INTO cosmetic_purchases (
+                    id, brand, product_name, category, product_type, purchase_date, price_bob_cents
+                ) VALUES (99, 'X', 'Y', 'skincare', 'moisturizer', '2026-01-01', 1000)
+                """
             )
 
 

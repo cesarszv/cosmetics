@@ -38,17 +38,23 @@ def connect_read_only(db_path: Path | str = DB_PATH) -> sqlite3.Connection:
 def get_inventory(db_path: Path | str = DB_PATH) -> list[dict[str, Any]]:
     query = """
         SELECT
-            purchases.id AS purchase_id,
-            products.brand,
-            products.name,
-            products.size,
-            purchases.price_bob,
-            purchases.purchase_date,
-            purchases.finish_date,
-            purchases.image_path
-        FROM purchases
-        JOIN products ON products.id = purchases.product_id
-        ORDER BY purchases.purchase_date DESC, purchases.id DESC
+            id AS purchase_id,
+            brand,
+            product_name AS name,
+            category,
+            product_type,
+            CASE
+                WHEN size_value IS NULL OR size_unit IS NULL THEN NULL
+                WHEN size_value = CAST(size_value AS INTEGER) THEN CAST(CAST(size_value AS INTEGER) AS TEXT) || size_unit
+                ELSE CAST(size_value AS TEXT) || size_unit
+            END AS size,
+            price_bob_cents AS price_bob,
+            purchase_date,
+            ended_date AS finish_date,
+            ended_date_kind,
+            image_path
+        FROM cosmetic_purchases
+        ORDER BY purchase_date DESC, id DESC
     """
 
     with connect_read_only(db_path) as connection:
@@ -123,16 +129,32 @@ def prepare_rows(
                 "purchase_id": row.get("purchase_id"),
                 "brand": row.get("brand") or "",
                 "name": row.get("name") or "",
+                "category": row.get("category") or "",
+                "product_type": row.get("product_type") or "",
                 "size": row.get("size") or "",
                 "price": format_price(int(row.get("price_bob") or 0)),
                 "purchase_date": row.get("purchase_date") or "",
                 "finish_date": row.get("finish_date") or "",
+                "finish_date_kind": row.get("ended_date_kind") or "",
+                "finish_date_display": format_finish_date(
+                    row.get("finish_date"), row.get("ended_date_kind")
+                ),
                 "available": row.get("finish_date") is None,
                 "image_url": image_url,
             }
         )
 
     return prepared, copied
+
+
+def format_finish_date(finish_date: Any, finish_date_kind: Any) -> str:
+    if not finish_date:
+        return ""
+
+    if finish_date_kind == "estimated":
+        return f"{finish_date} (estimada)"
+
+    return str(finish_date)
 
 
 def unique_image_name(row: dict[str, Any], image_path: Path, used_names: set[str]) -> str:
@@ -194,13 +216,22 @@ def render_document(rows: list[dict[str, Any]]) -> str:
 
 def render_card(row: dict[str, Any]) -> str:
     search_text = " ".join(
-        str(row.get(key, "")) for key in ("brand", "name", "size", "purchase_date", "finish_date")
+        str(row.get(key, ""))
+        for key in (
+            "brand",
+            "name",
+            "category",
+            "product_type",
+            "size",
+            "purchase_date",
+            "finish_date",
+        )
     ).lower()
     available = "true" if row["available"] else "false"
     image = render_image(row.get("image_url"), row.get("name") or "producto")
-    status = "Disponible" if row["available"] else "Terminado"
+    status = "Disponible" if row["available"] else "No disponible"
     status_class = "available" if row["available"] else "finished"
-    finished = row.get("finish_date") or "—"
+    finished = row.get("finish_date_display") or "—"
 
     return f"""<article class="card" data-available="{available}" data-search="{html.escape(search_text, quote=True)}">
   {image}
@@ -212,9 +243,10 @@ def render_card(row: dict[str, Any]) -> str:
     <h2>{html.escape(str(row.get("name") or ""))}</h2>
     <dl>
       <div><dt>Tamaño</dt><dd>{html.escape(str(row.get("size") or "—"))}</dd></div>
+      <div><dt>Tipo</dt><dd>{html.escape(str(row.get("product_type") or "—"))}</dd></div>
       <div><dt>Precio</dt><dd>{html.escape(str(row.get("price") or ""))}</dd></div>
       <div><dt>Compra</dt><dd>{html.escape(str(row.get("purchase_date") or "—"))}</dd></div>
-      <div><dt>Fin</dt><dd>{html.escape(str(finished))}</dd></div>
+      <div><dt>Terminado / no disponible</dt><dd>{html.escape(str(finished))}</dd></div>
     </dl>
   </div>
 </article>"""

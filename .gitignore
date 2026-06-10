@@ -9,7 +9,6 @@ __pycache__/
 dist/
 
 # Local/generated project junk
-ExportBlock-*/
 mutants/
 *.egg-info/
 
@@ -20,4 +19,5 @@ mutants/
 
 # OS/editor noise
 .DS_Store
-.vscode/
+.vscode/*
+!.vscode/tasks.json
