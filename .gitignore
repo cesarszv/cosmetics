@@ -21,3 +21,4 @@ mutants/
 .DS_Store
 .vscode/*
 !.vscode/tasks.json
+*.code-workspace
