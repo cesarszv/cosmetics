@@ -8,11 +8,16 @@ La idea es simple: **SQLite es la fuente local de verdad** y `dist/` es el artef
 
 ```txt
 cosmetics/
-├── build.py              # genera el sitio estático
-├── schema.sql            # schema SQLite versionado
-├── data/                 # datos locales: NO publicar sin revisar
-│   ├── cosmetics.db
-│   └── images/
+├── apps/                 # scripts de la app
+│   └── site/
+│       ├── build.py      # genera el sitio estático
+│       ├── validate_db.py    # valida la base SQLite
+│       └── publish_pages.py  # publica dist/ en GitHub Pages
+├── database/             # datos locales: NO publicar sin revisar
+│   ├── schema.sql        # schema SQLite versionado
+│   └── data/
+│       ├── cosmetics.db
+│       └── images/
 ├── dist/                 # salida generada para deploy
 ├── tests/
 └── pyproject.toml
@@ -21,7 +26,7 @@ cosmetics/
 ## Generar el sitio
 
 ```bash
-python3 build.py
+python3 apps/site/build.py
 ```
 
 Salida esperada:
@@ -44,7 +49,7 @@ python3 -m pytest
 La base esperada es:
 
 ```txt
-data/cosmetics.db
+database/data/cosmetics.db
 ```
 
 El modelo actual usa una tabla principal:
@@ -72,7 +77,7 @@ Cuando vino explícitamente del export/manual:
 ended_date_kind = exact
 ```
 
-Las imágenes se referencian desde SQLite con paths relativos a `data/`, por ejemplo:
+Las imágenes se referencian desde SQLite con paths relativos a `database/data/`, por ejemplo:
 
 ```txt
 images/1.jpg
@@ -101,13 +106,13 @@ Usá deploy estático. Para este proyecto, un backend sería overengineering.
 El deploy está automatizado con:
 
 ```bash
-python3 publish_pages.py
+python3 apps/site/publish_pages.py
 ```
 
 Ese comando hace cuatro cosas:
 
 1. exige que el working tree esté limpio;
-2. genera `dist/` desde `data/cosmetics.db`;
+2. genera `dist/` desde `database/data/cosmetics.db`;
 3. publica el contenido de `dist/` en la rama `gh-pages`;
 4. intenta configurar GitHub Pages con `gh`.
 
@@ -131,4 +136,4 @@ Si las fotos están en `.heic`, algunos navegadores no las muestran bien. Para u
 
 ## Backup
 
-Respaldá `data/` completo porque contiene la DB y las imágenes.
+Respaldá `database/data/` completo porque contiene la DB y las imágenes.

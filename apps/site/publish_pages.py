@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 DIST = ROOT / "dist"
 BRANCH = "gh-pages"
 
@@ -32,7 +32,7 @@ def repo_name_with_owner() -> str:
 
 
 def build_site() -> None:
-    run([sys.executable, "build.py"])
+    run([sys.executable, "apps/site/build.py"])
 
 
 def remote_branch_exists() -> bool:

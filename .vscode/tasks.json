@@ -13,7 +13,7 @@
       "label": "validate-db",
       "type": "process",
       "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["validate_db.py"],
+      "args": ["apps/site/validate_db.py"],
       "group": "test",
       "problemMatcher": []
     },
@@ -31,7 +31,7 @@
       "label": "build-site",
       "type": "process",
       "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["build.py"],
+      "args": ["apps/site/build.py"],
       "group": "build",
       "problemMatcher": []
     },
@@ -39,7 +39,7 @@
       "label": "publish-pages",
       "type": "process",
       "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["publish_pages.py"],
+      "args": ["apps/site/publish_pages.py"],
       "problemMatcher": []
     }
   ]

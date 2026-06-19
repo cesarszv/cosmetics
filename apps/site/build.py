@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Any
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_DIR = PROJECT_ROOT / "data"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = PROJECT_ROOT / "database" / "data"
 DB_PATH = DATA_DIR / "cosmetics.db"
 DIST_DIR = PROJECT_ROOT / "dist"
 DIST_IMAGES_DIR = DIST_DIR / "images"

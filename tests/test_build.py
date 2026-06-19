@@ -18,7 +18,7 @@ from build import (
 )
 
 
-SCHEMA = Path("schema.sql").read_text(encoding="utf-8")
+SCHEMA = Path("database/schema.sql").read_text(encoding="utf-8")
 
 
 def parse_test_size(size: str | None) -> tuple[float | None, str | None]:
@@ -284,7 +284,7 @@ def test_static_ui_defaults_to_only_available_filter() -> None:
 
 
 def test_generator_has_no_streamlit_or_pandas_runtime_dependency() -> None:
-    source = Path("build.py").read_text(encoding="utf-8")
+    source = Path("apps/site/build.py").read_text(encoding="utf-8")
 
     assert "streamlit" not in source
     assert "pandas" not in source

@@ -4,8 +4,8 @@ import sqlite3
 from pathlib import Path
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_DIR = PROJECT_ROOT / "data"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = PROJECT_ROOT / "database" / "data"
 DB_PATH = DATA_DIR / "cosmetics.db"
 
 
