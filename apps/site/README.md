@@ -1,8 +1,6 @@
 # Cosmetics
 
-Inventario personal de cosméticos generado como sitio estático desde SQLite.
-
-La idea es simple: **SQLite es la fuente local de verdad** y `dist/` es el artefacto desplegable. Nada de servidores, nada de Streamlit, nada de runtime raro.
+Inventario personal de cosméticos. **SQLite es la fuente de verdad**, `dist/` es el artefacto desplegable. Sin servidores ni runtime.
 
 ## Estructura
 
@@ -29,7 +27,7 @@ cosmetics/
 python3 apps/site/build.py
 ```
 
-Salida esperada:
+Salida:
 
 ```txt
 dist/index.html
@@ -46,77 +44,47 @@ python3 -m pytest
 
 ## Datos
 
-La base esperada es:
+Base: `database/data/cosmetics.db`. Tabla principal: `cosmetic_purchases` (una fila = una compra). La disponibilidad se deriva de `ended_date`:
 
 ```txt
-database/data/cosmetics.db
+ended_date IS NULL     -> lo tenés
+ended_date IS NOT NULL -> se terminó
 ```
 
-El modelo actual usa una tabla principal:
+`ended_date_kind` marca el origen de la fecha:
 
 ```txt
-cosmetic_purchases
+exact     -> vino del export/manual
+estimated -> inferida durante la carga
 ```
 
-Cada fila representa una compra/unidad comprada. No existe una columna `available`: la disponibilidad se deriva de `ended_date`.
-
-```txt
-ended_date IS NULL     -> todavía lo tenés
-ended_date IS NOT NULL -> se terminó o ya no lo tenés
-```
-
-Cuando una fecha fue inferida durante la carga inicial, queda marcada con:
-
-```txt
-ended_date_kind = estimated
-```
-
-Cuando vino explícitamente del export/manual:
-
-```txt
-ended_date_kind = exact
-```
-
-Las imágenes se referencian desde SQLite con paths relativos a `database/data/`, por ejemplo:
-
-```txt
-images/1.jpg
-```
-
-El generador abre SQLite en modo solo lectura (`mode=ro`) y copia al deploy solo las imágenes referenciadas por compras existentes.
+Las imágenes se referencian con paths relativos a `database/data/` (ej: `images/1.jpg`). El generador abre SQLite read-only (`mode=ro`) y copia al deploy solo las imágenes referenciadas.
 
 ## VSCode Tasks
 
-Este repo versiona `.vscode/tasks.json` para automatizar lo repetitivo sin meter configuración personal del editor.
-
-Tasks disponibles:
+`.vscode/tasks.json` automatiza lo repetitivo sin configuración personal del editor.
 
 - `validate-db`: valida integridad, schema, fechas y fotos referenciadas.
 - `test`: corre la suite de tests.
-- `check`: corre `validate-db` y después `test`.
+- `check`: `validate-db` y después `test`.
 - `build-site`: genera `dist/` desde SQLite.
-- `publish-pages`: publica `dist/` en GitHub Pages usando `publish_pages.py`.
+- `publish-pages`: publica `dist/` en GitHub Pages.
 
 ## Deploy recomendado
 
-Usá deploy estático. Para este proyecto, un backend sería overengineering.
+Deploy estático; un backend sería overengineering.
 
 ### GitHub Pages
 
-El deploy está automatizado con:
+Automatizado con:
 
 ```bash
 python3 apps/site/publish_pages.py
 ```
 
-Ese comando hace cuatro cosas:
+Hace: exige working tree limpio, genera `dist/` desde `database/data/cosmetics.db`, lo publica en `gh-pages`, e intenta configurar GitHub Pages con `gh`.
 
-1. exige que el working tree esté limpio;
-2. genera `dist/` desde `database/data/cosmetics.db`;
-3. publica el contenido de `dist/` en la rama `gh-pages`;
-4. intenta configurar GitHub Pages con `gh`.
-
-Si la configuración automática falla, hacelo manualmente en GitHub:
+Si la configuración automática falla, manual en GitHub:
 
 ```txt
 Settings → Pages → Build and deployment
@@ -125,15 +93,12 @@ Branch: gh-pages
 Folder: /root
 ```
 
-Otras opciones razonables:
+Otras opciones: Netlify (drag and drop de `dist/`), Cloudflare Pages.
 
-- Netlify: drag and drop de `dist/`.
-- Cloudflare Pages: estático sólido.
+## HEIC
 
-## Advertencia sobre HEIC
-
-Si las fotos están en `.heic`, algunos navegadores no las muestran bien. Para un deploy prolijo, convertí las imágenes fuente a `.jpg` o `.webp` antes de generar el sitio.
+Algunos navegadores no muestran `.heic`. Convertí las imágenes fuente a `.jpg` o `.webp` antes de generar.
 
 ## Backup
 
-Respaldá `database/data/` completo porque contiene la DB y las imágenes.
+Respaldá `database/data/` completo (DB + imágenes).

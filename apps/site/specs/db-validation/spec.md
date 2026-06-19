@@ -1,14 +1,14 @@
 ---
 title: DB Validation
 status: draft
-description: Validador de integridad de la DB antes de generar o publicar el sitio, CI gate fail-fast
+description: Validador de integridad de la DB antes de generar/publicar el sitio, CI gate fail-fast
 ---
 
 # Spec: DB Validation
 
 ## Intencion
 
-Validar la integridad de la DB antes de generar o publicar el sitio. Es el CI gate — si la validacion falla, el build no deberia proceder.
+Validar integridad de la DB antes de generar o publicar el sitio. CI gate — si falla, el build no procede.
 
 ## Contexto
 
@@ -26,7 +26,7 @@ SQLite `PRAGMA integrity_check`.
 
 ### Schema presence
 
-Verifica que la tabla `cosmetic_purchases` exista.
+Verifica que `cosmetic_purchases` exista.
 
 ### Column set
 
@@ -34,7 +34,7 @@ Verifica el set exacto de columnas.
 
 ### No available column
 
-RAISEA si encuentra columna `available` (invariante del modelo, ver `cosmetic-purchase-model`).
+RAISEA si encuentra columna `available` (ver `cosmetic-purchase-model`).
 
 ### Date consistency
 
@@ -58,8 +58,8 @@ Imprime counts (Compras/Actuales/Terminadas/Fechas estimadas) o raisea.
 
 ## Principios
 
-- Fail-fast: si algo falla, raisea `RuntimeError` con mensaje descriptivo
-- No es parameterizable — `DB_PATH` hardcoded (a diferencia de `build.py` que acepta overrides)
+- Fail-fast: raisea `RuntimeError` con mensaje descriptivo
+- No parameterizable — `DB_PATH` hardcoded (a diferencia de `build.py`)
 - Corre antes de pytest en el task `check`
 
 ## Alcance
@@ -74,5 +74,5 @@ Imprime counts (Compras/Actuales/Terminadas/Fechas estimadas) o raisea.
 
 ## Preguntas pendientes
 
-- TBD: `validate_db.py` no tiene tests — no es unit-testeable sin refactor (DB_PATH hardcoded, sin override params).
-- TBD: `product_type` enum se enforcea solo a nivel SQLite CHECK, el validador no lo chequea explicitamente.
+- TBD: `validate_db.py` sin tests — no unit-testeable sin refactor (DB_PATH hardcoded, sin override).
+- TBD: `product_type` enum solo enforced a SQLite CHECK, validador no lo chequea.

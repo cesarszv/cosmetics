@@ -1,6 +1,6 @@
 # ADRs de Cosmetics
 
-Indice corto de decisiones de arquitectura para entender el rumbo tecnico del proyecto sin releer cada ADR completa.
+Indice de decisiones de arquitectura para entender el rumbo tecnico sin releer cada ADR.
 
 | Nro. | Decision | Estado | Resumen | Link |
 | --- | --- | --- | --- | --- |
@@ -15,6 +15,6 @@ Indice corto de decisiones de arquitectura para entender el rumbo tecnico del pr
 
 ## Flujo actual
 
-Cosmetics es un generador de sitio estatico single-user. La fuente de verdad es SQLite (`database/data/cosmetics.db`), commiteada a git. El schema vive en `database/schema.sql` y la tabla base es `cosmetic_purchases`, denormalizada, con enums por CHECK constraints y dinero en centavos enteros.
+Cosmetics es un generador de sitio estatico single-user. Fuente de verdad: SQLite (`database/data/cosmetics.db`) commiteada a git. Schema en `database/schema.sql`; tabla base `cosmetic_purchases` denormalizada, enums por CHECK, dinero en centavos enteros.
 
-`build.py` abre la DB read-only con stdlib de Python y renderiza un `index.html` vanilla con todo inline. `validate_db.py` enforcea invariantes antes de generar (no columna `available`, fechas ISO, precios no negativos, paired-null). El deploy es manual: `publish_pages.py` copia `dist/` a la rama `gh-pages` via worktree y configura GitHub Pages.
+`build.py` abre la DB read-only con stdlib y renderiza un `index.html` vanilla inline. `validate_db.py` enforcea invariantes antes de generar (no columna `available`, fechas ISO, precios no negativos, paired-null). Deploy manual: `publish_pages.py` copia `dist/` a `gh-pages` via worktree y configura GitHub Pages.

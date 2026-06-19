@@ -1,18 +1,18 @@
 ---
 title: Static Inventory Dashboard
 status: draft
-description: Generador de dashboard estatico a partir de la DB de compras de cosmeticos, sin backend ni framework de frontend
+description: Generador de dashboard estatico desde la DB de compras, sin backend ni framework de frontend
 ---
 
 # Spec: Static Inventory Dashboard
 
 ## Intencion
 
-Tomar las compras de cosmeticos guardadas en SQLite y publicarlas como un dashboard estatico navegable en GitHub Pages. Sin backend, sin framework de frontend, sin runtime dependencies. El generador lee la DB read-only, modela, renderiza HTML; el navegador solo busca y filtra.
+Publicar las compras de cosmeticos de SQLite como dashboard estatico navegable en GitHub Pages. Sin backend, sin framework, sin runtime dependencies. El generador lee DB read-only, modela, renderiza HTML; el navegador solo busca y filtra.
 
 ## Contexto
 
-- `apps/site/build.py` — generador del sitio estatico (353 lineas)
+- `apps/site/build.py` — generador (353 lineas)
 - `database/schema.sql` — esquema que consume (ver `cosmetic-purchase-model`)
 - `database/data/cosmetics.db` — DB read-only
 - `database/data/images/` — imagenes fuente
@@ -27,15 +27,15 @@ Tomar las compras de cosmeticos guardadas en SQLite y publicarlas como un dashbo
 
 ### Cards
 
-Una card por fila de `cosmetic_purchases`. Orden: `purchase_date DESC, id DESC`. Brand se muestra uppercase sin label (no "Marca"). Size/type/price/date usan `<dl>`.
+Una card por fila de `cosmetic_purchases`. Orden: `purchase_date DESC, id DESC`. Brand uppercase sin label. Size/type/price/date usan `<dl>`.
 
 ### Filtro client-side
 
-Checkbox "Solo disponibles" (default ON) + busqueda libre sobre brand/name/category/type/size/dates. Busqueda en minusculas locale espanol. Atributo `data-search` precomputado en build time.
+Checkbox "Solo disponibles" (default ON) + busqueda libre sobre brand/name/category/type/size/dates. Busqueda en minusculas locale espanol. `data-search` precomputado en build time.
 
 ### Imagenes
 
-`resolve_image` con path-traversal guard (`relative_to(root)` retorna None si escapa). Placeholder "Sin foto" para missing/broken. Dedup via `used_names` set con sufijos `-2`, `-3`. Renombradas a `purchase-<id>.<ext>` en dist. Solo se copian imagenes referenciadas por compras existentes.
+`resolve_image` con path-traversal guard (`relative_to(root)` retorna None si escapa). Placeholder "Sin foto" para missing/broken. Dedup via `used_names` set con sufijos `-2`, `-3`. Renombradas a `purchase-<id>.<ext>` en dist. Solo se copian imagenes referenciadas.
 
 ### Precio
 
@@ -43,7 +43,7 @@ Checkbox "Solo disponibles" (default ON) + busqueda libre sobre brand/name/categ
 
 ### Fechas
 
-`format_finish_date`: appendea "(estimada)" cuando `ended_date_kind = estimated`.
+`format_finish_date`: appendea "(estimada)" si `ended_date_kind = estimated`.
 
 ### HTML escaping
 
@@ -51,8 +51,8 @@ Checkbox "Solo disponibles" (default ON) + busqueda libre sobre brand/name/categ
 
 ## Principios
 
-- DB read-only: `connect_read_only()` abre via `file:...?mode=ro` URI. Test pinea que INSERT raisea `OperationalError`.
-- Zero runtime dependencies (test pinea que "streamlit" y "pandas" no aparecen en build.py)
+- DB read-only: `connect_read_only()` via `file:...?mode=ro` URI. Test pinea que INSERT raisea `OperationalError`.
+- Zero runtime dependencies (test pinea que "streamlit" y "pandas" no estan en build.py)
 - HTML escaping en todos los campos user-controlled
 - Path traversal prevention en resolucion de imagenes
 - Solo imagenes referenciadas se copian a `dist/`
@@ -62,7 +62,7 @@ Checkbox "Solo disponibles" (default ON) + busqueda libre sobre brand/name/categ
 
 ## Alcance
 
-- `build.py` — generacion del sitio estatico, render, filtro, imagenes, formato
+- `build.py` — generacion, render, filtro, imagenes, formato
 
 ## Fuera de alcance
 
@@ -73,7 +73,7 @@ Checkbox "Solo disponibles" (default ON) + busqueda libre sobre brand/name/categ
 
 ## Preguntas pendientes
 
-- TBD: sin paginacion — todas las rows en un HTML. Repensar mas alla de ~cientos de rows.
-- TBD: busqueda es substring client-side solo — sin fuzzy, sin field-specific, sin debouncing.
-- TBD: HEIC originals committed alongside JPGs — conversion es manual, no automatizada.
-- TBD: `dist/` esta gitignored pero actualmente presente en disco (stale artifact).
+- TBD: sin paginacion — repensar mas alla de ~cientos de rows.
+- TBD: busqueda substring client-side solo — sin fuzzy, sin field-specific, sin debouncing.
+- TBD: HEIC originals committed alongside JPGs — conversion manual.
+- TBD: `dist/` gitignored pero presente en disco (stale artifact).

@@ -1,3 +1,3 @@
 # Cosmetics
 
-Inventario personal de cosméticos almacenado con SQLite.
+Inventario personal de cosméticos en SQLite.
