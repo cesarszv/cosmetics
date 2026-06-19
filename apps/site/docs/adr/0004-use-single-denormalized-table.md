@@ -14,7 +14,7 @@ Usar una sola tabla `cosmetic_purchases` con `brand` y `product_name` como free-
 
 ## Cómo funciona/interactúa
 
-Una fila = una unidad comprada. `category` y `product_type` con enums vía `CHECK`; `brand` y `product_name` son free-text. Las views `current_inventory`, `purchase_history` y `skincare_spending` operan sobre la tabla base sin joins.
+Una fila = una unidad comprada. `category` y `product_type` con enums vía `CHECK` constraints; `brand` y `product_name` son free-text. Las views `current_inventory`, `purchase_history` y `skincare_spending` operan sobre la tabla base sin joins.
 
 ## Tradeoffs
 

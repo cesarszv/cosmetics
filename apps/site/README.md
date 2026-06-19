@@ -1,6 +1,6 @@
 # Cosmetics
 
-Inventario personal de cosméticos. **SQLite es la fuente de verdad**, `dist/` es el artefacto desplegable. Sin servidores ni runtime.
+Inventario personal de cosméticos. **SQLite es la fuente de verdad**, `dist/` es el artefacto desplegable. Sin servidores, nada de Streamlit, sin runtime raro.
 
 ## Estructura
 
@@ -44,11 +44,11 @@ python3 -m pytest
 
 ## Datos
 
-Base: `database/data/cosmetics.db`. Tabla principal: `cosmetic_purchases` (una fila = una compra). La disponibilidad se deriva de `ended_date`:
+Base: `database/data/cosmetics.db`. Tabla principal: `cosmetic_purchases` (una fila = una compra). No existe columna `available`: la disponibilidad se deriva de `ended_date`:
 
 ```txt
 ended_date IS NULL     -> lo tenés
-ended_date IS NOT NULL -> se terminó
+ended_date IS NOT NULL -> se terminó o ya no lo tenés
 ```
 
 `ended_date_kind` marca el origen de la fecha:

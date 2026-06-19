@@ -6,12 +6,12 @@ Fuente: `spec.md`
 
 ## Research base
 
-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox
-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/search
-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/loading
-- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a
-- https://docs.python.org/3/library/html.html
-- https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
+- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox — checkbox nativo con label clicable para "Solo disponibles".
+- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/search — input de busqueda nativo con `type="search"`.
+- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/loading — `loading="lazy"` en imagenes fuera de viewport.
+- https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a — `target="_blank" rel="noopener"` para links de imagen en nueva pestana.
+- https://docs.python.org/3/library/html.html — `html.escape` para prevenir XSS en todos los campos user-controlled.
+- https://docs.python.org/3/library/sqlite3.html#sqlite3.connect — URI `file:...?mode=ro` para conexion read-only.
 
 ## Decision de producto
 
@@ -65,7 +65,7 @@ Fuente: `spec.md`
 - A5: Busqueda usa `<input type="search">` con `autocomplete="off"`.
 - A6: Grid usa `aria-live="polite"` para anunciar cambios de filtro.
 - A7: Estado vacio usa `<p id="empty" hidden>` toggledo por JS.
-- A8: Placeholder de imagen es texto, no `<img>`.
+- A8: Placeholder de imagen es texto, no `<img>` (no necesita alt).
 - A9: CSS responsive con `@media (max-width: 680px)` que apila el hero.
 
 ## Casos limite

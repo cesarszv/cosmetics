@@ -59,7 +59,7 @@ Imprime counts (Compras/Actuales/Terminadas/Fechas estimadas) o raisea.
 ## Principios
 
 - Fail-fast: raisea `RuntimeError` con mensaje descriptivo
-- No parameterizable — `DB_PATH` hardcoded (a diferencia de `build.py`)
+- No parameterizable — `DB_PATH` hardcoded (a diferencia de `build.py` que acepta overrides)
 - Corre antes de pytest en el task `check`
 
 ## Alcance

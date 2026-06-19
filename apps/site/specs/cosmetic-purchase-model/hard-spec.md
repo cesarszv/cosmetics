@@ -6,7 +6,7 @@ Fuente: `spec.md`
 
 ## Requisitos verificables
 
-- R1: `cosmetic_purchases` en `database/schema.sql` con 15 columnas: id, brand, product_name, category, product_type, size_value, size_unit, purchase_date, price_bob_cents, ended_date, ended_date_kind, image_path, notes, created_at, updated_at.
+- R1: `cosmetic_purchases` en `database/schema.sql` con exactamente 15 columnas: id, brand, product_name, category, product_type, size_value, size_unit, purchase_date, price_bob_cents, ended_date, ended_date_kind, image_path, notes, created_at, updated_at.
 - R2: `id` INTEGER PRIMARY KEY.
 - R3: `brand` TEXT NOT NULL.
 - R4: `product_name` TEXT NOT NULL.
@@ -32,11 +32,11 @@ Fuente: `spec.md`
 ## Reglas verificables
 
 - V1: No columna `available`; el validador raisea si la encuentra.
-- V2: Paired-null: `ended_date` y `ended_date_kind` ambos NULL o ambos non-NULL (CHECK).
+- V2: Paired-null: `ended_date` y `ended_date_kind` deben ser ambos NULL o ambos non-NULL (CHECK constraint).
 - V3: Dinero como integer cents (BOB), nunca floats.
 - V4: Fechas como TEXT ISO `YYYY-MM-DD` con GLOB `????-??-??'`, no tipo DATE.
 - V5: `ended_date >= purchase_date` por CHECK (lexicografico, valido por ISO ordering).
-- V6: Tabla denormalizada: sin foreign keys, sin tablas marca/producto, brand y product_name free-text.
+- V6: Tabla intencionalmente denormalizada: sin foreign keys, sin tablas marca/producto, brand y product_name free-text.
 - V7: Sin migraciones; snapshots `.before-*` como historia.
 
 ## Casos limite
@@ -63,6 +63,6 @@ Fuente: `spec.md`
 ## Preguntas pendientes
 
 - TBD: `updated_at` sin maintainer — mantener o remover.
-- TBD: `notes` sin render en UI — surfacear o no.
+- TBD: `notes` con datos pero sin render en UI — surfacear o no.
 - TBD: views sin consumidor — surfacear `skincare_spending` o no.
 - TBD: `size_unit = 'unit'` permitido pero no usado en datos actuales.

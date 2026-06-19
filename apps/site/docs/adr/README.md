@@ -15,6 +15,6 @@ Indice de decisiones de arquitectura para entender el rumbo tecnico sin releer c
 
 ## Flujo actual
 
-Cosmetics es un generador de sitio estatico single-user. Fuente de verdad: SQLite (`database/data/cosmetics.db`) commiteada a git. Schema en `database/schema.sql`; tabla base `cosmetic_purchases` denormalizada, enums por CHECK, dinero en centavos enteros.
+Cosmetics es un generador de sitio estatico single-user. Fuente de verdad: SQLite (`database/data/cosmetics.db`) commiteada a git. Schema en `database/schema.sql`; tabla base `cosmetic_purchases` denormalizada, enums por CHECK constraints, dinero en centavos enteros.
 
 `build.py` abre la DB read-only con stdlib y renderiza un `index.html` vanilla inline. `validate_db.py` enforcea invariantes antes de generar (no columna `available`, fechas ISO, precios no negativos, paired-null). Deploy manual: `publish_pages.py` copia `dist/` a `gh-pages` via worktree y configura GitHub Pages.

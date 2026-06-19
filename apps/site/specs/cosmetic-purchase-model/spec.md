@@ -58,7 +58,7 @@ Denormalizada intencionalmente, sin foreign keys, identidad de marca/producto po
 ## Principios
 
 - Disponibilidad derivada: no hay columna `available`; se deriva de `ended_date IS NULL`. El validador RAISEA si la encuentra.
-- Paired-null: `ended_date` y `ended_date_kind` ambos NULL o ambos non-NULL (CHECK + validador)
+- Paired-null: `ended_date` y `ended_date_kind` deben ser ambos NULL o ambos non-NULL (CHECK constraint + validador)
 - Money como integer cents (BOB), nunca floats. `format_price` divide por 100.
 - Fechas como ISO `YYYY-MM-DD` TEXT con GLOB `????-??-??'` (string ordering, no tipo DATE)
 - `ended_date_kind`: `estimated` = inferida, `exact` = explicita. UI appendea "(estimada)".

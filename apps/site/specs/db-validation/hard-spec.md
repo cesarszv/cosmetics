@@ -8,7 +8,7 @@ Fuente: `spec.md`
 
 - R1: `DB_PATH` hardcoded a `PROJECT_ROOT/database/data/cosmetics.db`.
 - R2: DB inexistente raisea `FileNotFoundError` con "No existe la base esperada".
-- R3: `REQUIRED_COLUMNS` = {id, brand, product_name, category, product_type, size_value, size_unit, purchase_date, price_bob_cents, ended_date, ended_date_kind, image_path, notes, created_at, updated_at} (15).
+- R3: `REQUIRED_COLUMNS` es exactamente {id, brand, product_name, category, product_type, size_value, size_unit, purchase_date, price_bob_cents, ended_date, ended_date_kind, image_path, notes, created_at, updated_at} (15 columnas).
 - R4: `print_summary` imprime "DB valida" + Compras, Actuales, Terminadas/no disponibles, Fechas estimadas.
 - R5: "Actuales" = filas con `ended_date IS NULL`.
 - R6: "Terminadas/no disponibles" = filas con `ended_date IS NOT NULL`.
@@ -16,9 +16,9 @@ Fuente: `spec.md`
 
 ## Reglas verificables
 
-- V1: `PRAGMA integrity_check` retorna "ok"; si no, RuntimeError.
+- V1: `PRAGMA integrity_check` debe retornar "ok"; si no, RuntimeError.
 - V2: `cosmetic_purchases` debe existir en `sqlite_master`; si no, RuntimeError.
-- V3: Set de columnas debe coincidir con `REQUIRED_COLUMNS`; si faltan, RuntimeError.
+- V3: Set de columnas debe coincidir exactamente con `REQUIRED_COLUMNS`; si faltan, RuntimeError.
 - V4: Columna `available` presente -> RuntimeError con "No debe existir columna available; usa ended_date".
 - V5: Paired-null: cuenta filas inconsistentes ended_date/ended_date_kind; si >0, RuntimeError.
 - V6: Date order: cuenta filas con `ended_date < purchase_date`; si >0, RuntimeError.

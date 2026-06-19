@@ -44,7 +44,7 @@ Cada avance de fase requiere aprobacion humana.
 - Simple y concreto.
 - Frontmatter YAML para metadatos: `title`, `status`, `description`.
 - Separar hechos, inferencias y dudas.
-- Nombrar la fuente sin copiar datos sensibles.
+- Nombrar la fuente sin copiar datos sensibles innecesariamente.
 - Preferir ejemplos anonimizados.
 - Marcar lo pendiente como `TBD` o pregunta, no como verdad.
 - No convertir datos de cosmeticos ni de compras en hecho duro sin respaldo.
