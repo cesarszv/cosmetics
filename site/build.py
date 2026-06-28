@@ -105,7 +105,11 @@ def build_site(
     image_dir = output_dir / "images"
 
     if output_dir.exists():
-        shutil.rmtree(output_dir)
+        for child in output_dir.iterdir():
+            if child.is_dir():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
     image_dir.mkdir(parents=True, exist_ok=True)
 
     prepared_rows, copied_images = prepare_rows(rows, data_dir, image_dir)
