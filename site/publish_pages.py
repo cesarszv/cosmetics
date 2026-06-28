@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -8,8 +9,20 @@ import tempfile
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-DIST = ROOT / "dist"
+DOMAIN_ROOT = Path(__file__).resolve().parent.parent
+
+
+def repo_root(start: Path = Path(__file__).resolve()) -> Path:
+    if home := os.environ.get("CSZV_HOME"):
+        return Path(home).expanduser().resolve()
+    for path in (start, *start.parents):
+        if (path / ".cszv-root").exists():
+            return path
+    raise FileNotFoundError(".cszv-root not found")
+
+
+ROOT = repo_root()
+DIST = DOMAIN_ROOT / "dist"
 BRANCH = "gh-pages"
 
 
@@ -32,7 +45,7 @@ def repo_name_with_owner() -> str:
 
 
 def build_site() -> None:
-    run([sys.executable, "apps/site/build.py"])
+    run([sys.executable, "apps/cosmetics/site/build.py"])
 
 
 def remote_branch_exists() -> bool:

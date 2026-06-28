@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import os
 import shutil
 import sqlite3
 from dataclasses import dataclass
@@ -8,10 +9,22 @@ from pathlib import Path
 from typing import Any
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DOMAIN_ROOT = Path(__file__).resolve().parent.parent
+
+
+def repo_root(start: Path = Path(__file__).resolve()) -> Path:
+    if home := os.environ.get("CSZV_HOME"):
+        return Path(home).expanduser().resolve()
+    for path in (start, *start.parents):
+        if (path / ".cszv-root").exists():
+            return path
+    raise FileNotFoundError(".cszv-root not found")
+
+
+PROJECT_ROOT = repo_root()
 DATA_DIR = PROJECT_ROOT / "database" / "data"
 DB_PATH = DATA_DIR / "cosmetics.db"
-DIST_DIR = PROJECT_ROOT / "dist"
+DIST_DIR = DOMAIN_ROOT / "dist"
 DIST_IMAGES_DIR = DIST_DIR / "images"
 
 SITE_TITLE = "Cosmetics"

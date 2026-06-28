@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+def repo_root(start: Path = Path(__file__).resolve()) -> Path:
+    if home := os.environ.get("CSZV_HOME"):
+        return Path(home).expanduser().resolve()
+    for path in (start, *start.parents):
+        if (path / ".cszv-root").exists():
+            return path
+    raise FileNotFoundError(".cszv-root not found")
+
+
+PROJECT_ROOT = repo_root()
 DATA_DIR = PROJECT_ROOT / "database" / "data"
 DB_PATH = DATA_DIR / "cosmetics.db"
 
